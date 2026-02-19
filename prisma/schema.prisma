@@ -1,0 +1,335 @@
+generator client {
+  provider      = "prisma-client"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "debian-openssl-1.0.x", "debian-openssl-3.0.x", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String            @id @unique @default(uuid())
+  name              String
+  phone             String            @unique
+  fcmToken          String?
+  password          String
+  nid               String
+  email             String?
+  occupation        String
+  income            Float             @default(0)
+  division          String
+  address           String
+  referralCode      String?
+  role              UserRole          @default(USER)
+  status            UserStatus        @default(ACTIVE)
+  passwordChangedAt DateTime
+  createdAt         DateTime          @default(now())
+  rechargeRequests  rechargeRequest[]
+  balance           Float             @default(0)
+  products          products[]
+  customerLists     customer_list[]
+  sales             sales[]
+  creditLists       credit_list[]
+  debitLists        debit_list[]
+  packageBuyers     package_buyers[]
+  conversations     conversations?
+  activeTokenId     String?
+  billHistories     bill_history[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  BLOCKED
+  ACTIVE
+  VERIFIED
+}
+
+model OtpCodes {
+  id        String   @id @unique @default(uuid())
+  code      String
+  phone     String   @unique
+  updatedAt DateTime
+  isSuccess Boolean  @default(false)
+}
+
+enum offer_types {
+  INTERNET
+  MINUTE
+  BUNDLE
+  CALL_RATE
+}
+
+enum sim_type {
+  PRE_PAID
+  POST_PAID
+}
+
+enum network_type {
+  GRAMEENPHONE
+  ROBI
+  AIRTEL
+  BANGLALINK
+  TELETALK
+  SKITTO
+}
+
+model offers {
+  id             String           @id @unique @default(uuid())
+  title          String
+  createdAt      DateTime         @default(now())
+  rechargeOffers rechargeOffers[]
+}
+
+model rechargeOffers {
+  id               String            @id @unique @default(uuid())
+  type             offer_types
+  sim_type         sim_type
+  network_type     network_type
+  cash_back        Float             @default(0)
+  auto             Boolean           @default(true)
+  ussd             String?
+  price            Float
+  offerId          String?
+  offer            offers?           @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  name             String
+  validity         String
+  createdAt        DateTime          @default(now())
+  rechargeRequests rechargeRequest[]
+}
+
+model rechargeRequest {
+  id           String          @id @unique @default(uuid())
+  amount       Float?
+  phone        String
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       String          @default("PENDING")
+  bonus        Float           @default(0)
+  network_type network_type
+  sim_type     sim_type
+  offerId      String?
+  offer        rechargeOffers? @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime        @default(now())
+}
+
+model products {
+  id         String        @id @unique @default(uuid())
+  name       String
+  unit       String
+  stock      Int           @default(1)
+  isStock    Boolean       @default(true)
+  price      Float
+  images     String[]
+  note       String?
+  tax        Float         @default(0)
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  salesItems sales_items[]
+}
+
+model customer_list {
+  id        String   @id @unique @default(uuid())
+  name      String
+  email     String?
+  phone     String
+  address   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  sales     sales[]
+}
+
+model sales {
+  id         String        @id @unique @default(uuid())
+  customerId String
+  customer   customer_list @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  subtotal   Float
+  discount   Float         @default(0)
+  total      Float
+  tax        Float         @default(0)
+  paid       Float
+  due        Float
+  createdAt  DateTime      @default(now())
+  salesItems sales_items[]
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model sales_items {
+  id        String   @id @unique @default(uuid())
+  productId String
+  product   products @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  saleId    String
+  sale      sales    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+enum banks {
+  BKASH
+  NAGAD
+  ROCKET
+  UPAY
+  NA
+}
+
+model credit_list {
+  id             String   @id @unique @default(uuid())
+  bank_name      banks
+  account_number String
+  amount         String
+  transaction_id String?
+  online_pay     Boolean  @default(false)
+  status         String   @default("PENDING")
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+}
+
+model account_number {
+  id             String @id @unique @default(uuid())
+  bank_name      banks
+  account_number String
+  account_type   String @default("SEND_MONEY")
+}
+
+model online_pay_configs {
+  id            String   @id @unique @default(uuid())
+  bank_name     banks    @unique
+  base_url      String
+  username      String
+  password      String
+  key           String
+  secret        String
+  call_back_url String
+  createdAt     DateTime @default(now())
+}
+
+model packages {
+  id                  String           @id @unique @default(uuid())
+  name                String           @unique
+  details             String
+  product_limit       Int
+  recharge_commission Float            @default(0)
+  price               Float            @default(100)
+  isYearly            Boolean          @default(false)
+  cashout_charge      Float            @default(1.4)
+  packageBuyers       package_buyers[]
+}
+
+model package_buyers {
+  id        String   @id @unique @default(uuid())
+  packageId String
+  package   packages @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model debit_list {
+  id             String   @id @unique @default(uuid())
+  bank_name      banks
+  account_number String
+  amount         String
+  transaction_id String?
+  status         String   @default("PENDING")
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charge         Float    @default(0)
+  createdAt      DateTime @default(now())
+}
+
+model settings {
+  id                  String @id @unique @default(uuid())
+  free_product_limit  Int    @default(50)
+  recharge_commission Float  @default(0)
+  cashout_charge      Float  @default(14)
+}
+
+model conversations {
+  id        String     @id @unique @default(uuid())
+  senderId  String     @unique
+  sender    User       @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  messages  messages[]
+}
+
+model messages {
+  id             String        @id @unique @default(uuid())
+  text           String
+  read           Boolean       @default(false)
+  sender         Boolean       @default(true)
+  conversationId String
+  conversation   conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+}
+
+model sim_client {
+  id            String       @id @unique @default(uuid())
+  type          network_type @unique
+  carrier       String       @unique
+  subId         String
+  slot          Int
+  sms           Boolean      @default(false)
+  recharge_ussd String
+  socketId      String
+  isActive      Boolean      @default(true)
+  updatedAt     DateTime
+}
+
+model banner {
+  id        String   @id @unique @default(uuid())
+  imageUrl  String
+  createdAt DateTime @default(now())
+}
+
+model contacts {
+  id        String   @id @unique @default(uuid())
+  name      String
+  email     String?
+  phone     String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model bill_category {
+  id        String   @id @unique @default(uuid())
+  title     String
+  icon      String
+  createdAt DateTime @default(now())
+  billers   biller[]
+}
+
+model biller {
+  id            String         @id @unique @default(uuid())
+  name          String
+  categoryId    String
+  category      bill_category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  icon          String
+  billHistories bill_history[]
+}
+
+model bill_history {
+  id              String   @id @unique @default(uuid())
+  billerId        String
+  biller          biller   @relation(fields: [billerId], references: [id], onDelete: Cascade)
+  meter_no        String?
+  contact_no      String?
+  amount          Float
+  sms_account_no  String?
+  subscription_id String?
+  status          String   @default("PENDING")
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charge          Float    @default(5)
+  createdAt       DateTime @default(now())
+}
