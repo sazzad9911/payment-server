@@ -17,36 +17,8 @@ const moduleRoutes = [
     route: authRoutes,
   },
   {
-    path: "/recharge",
-    route: RechargeRoutes,
-  },
-  {
-    path: "/product",
-    route: ProductRoutes,
-  },
-  {
-    path: "/balance",
-    route: BalanceRoutes,
-  },
-  {
-    path: "/package",
-    route: PackageRoutes,
-  },
-  {
     path: "/user",
     route: UserRoute,
-  },
-  {
-    path: "/chat",
-    route: ChatRoutes,
-  },
-  {
-    path: "/system",
-    route: SystemRoutes,
-  },
-  {
-    path: "/bill",
-    route: BillRoutes,
   },
 ];
 
