@@ -1,0 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PackageRoutes = void 0;
+const express_1 = require("express");
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
+const Package_Validation_1 = require("./Package.Validation");
+const Package_controller_1 = require("./Package.controller");
+const auth_1 = __importDefault(require("../../middlewares/auth"));
+const router = (0, express_1.Router)();
+router.post("/buy-package/:id", (0, auth_1.default)(), Package_controller_1.PackageController.buyPackage);
+router.patch("/settings", (0, auth_1.default)("ADMIN"), (0, validateRequest_1.default)(Package_Validation_1.PackageValidation.settingsSchema), Package_controller_1.PackageController.updateSettings);
+router.get("/settings", (0, auth_1.default)("ADMIN"), Package_controller_1.PackageController.getSettings);
+router.post("/", (0, auth_1.default)("ADMIN"), (0, validateRequest_1.default)(Package_Validation_1.PackageValidation.packageSchema), Package_controller_1.PackageController.createPackage);
+router.get("/", (0, auth_1.default)(), Package_controller_1.PackageController.getAllPackages);
+router.get("/:id", (0, auth_1.default)("ADMIN"), Package_controller_1.PackageController.getPackageById);
+router.patch("/:id", (0, auth_1.default)("ADMIN"), (0, validateRequest_1.default)(Package_Validation_1.PackageValidation.updatePackageSchema), Package_controller_1.PackageController.updatePackage);
+router.delete("/:id", (0, auth_1.default)("ADMIN"), Package_controller_1.PackageController.deletePackage);
+router.post("/buy-package/:id", (0, auth_1.default)(), Package_controller_1.PackageController.buyPackage);
+exports.PackageRoutes = router;

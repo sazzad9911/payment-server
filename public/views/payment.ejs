@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= site?.name %> Payment</title>
+
+    <style>
+      body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#f6f7fb;height: 100vh;
+        display: flex;justify-content: center;align-items: center; }
+      .wrap { max-width: 520px; margin: 0 auto; padding: 16px; }
+      .card { background:#fff; border-radius:16px; padding:16px; box-shadow: 0 6px 24px rgba(0,0,0,.06); }
+      .header { display:flex; gap:12px; align-items:center; }
+      .logo { width:44px; height:44px; border-radius:12px; object-fit:cover; background:#eee; }
+      .title { line-height: 1.2; }
+      .title h1 { font-size: 18px; margin: 0; }
+      .title p { margin: 4px 0 0; color:#666; font-size: 13px; }
+      .row { display:flex; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+      .row:last-child { border-bottom: 0; }
+      .label { color:#666; font-size: 13px; }
+      .value { font-weight: 600; }
+      .timer { margin-top: 12px; padding: 10px 12px; background:#fff7e6; border: 1px solid #ffe1a6; border-radius: 12px; font-weight:600; display:flex; justify-content:space-between; }
+      .btn { width:100%; padding: 12px 14px; border:0; border-radius: 12px; font-weight: 700; cursor:pointer; }
+      .btn-primary { background:#111827; color:#fff; }
+      .btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+      .input {width: 95%; padding: 12px 14px; border-radius: 12px; border: 1px solid #d7dbe7; font-size: 15px; outline:none; }
+      .muted { color:#6b7280; font-size: 13px; margin-top: 8px; }
+      .status { margin-top: 12px; padding: 10px 12px; background:#eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; }
+      .danger { background:#ffecec; border-color:#ffb6b6; }
+      .ok { background:#ecfdf5; border-color:#a7f3d0; }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <div class="header">
+          <% if (site?.logo) { %>
+            <img class="logo" src="<%= site.logo %>" alt="logo" />
+          <% } else { %>
+            <div class="logo"></div>
+          <% } %>
+
+          <div class="title">
+            <h1><%= site?.name %></h1>
+            <p>Secure payment page</p>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="row">
+            <div class="label">Amount</div>
+            <div class="value"><%= amount %></div>
+          </div>
+
+          <div class="row">
+            <div class="label">Bank</div>
+            <div class="value"><%= bank?.bank %> - <%= bank?.type %></div>
+          </div>
+
+          <div class="row">
+            <div class="label">Number</div>
+            <div class="value"><%= bank?.number %></div>
+          </div>
+        </div>
+
+        <div class="timer">
+          <span>Time remaining</span>
+          <span id="timer">30:00</span>
+        </div>
+
+        <% if (!payment) { %>
+          <!-- Submit trxId -->
+          <form method="POST" action="/api/v1/payment/submit" style="margin-top:14px">
+            <input type="hidden" name="token" value="<%= token %>" />
+            <label class="label" for="trxId">Transaction ID (TrxID)</label>
+            <input class="input" id="trxId" name="trxId" placeholder="Enter your TrxID" required />
+
+            <button class="btn btn-primary" type="submit" style="margin-top:12px">
+              Submit
+            </button>
+
+            <div class="muted">
+              After submitting, we will verify your payment automatically.
+            </div>
+          </form>
+        <% } else { %>
+          <!-- Waiting mode -->
+          <div class="status" id="statusBox">
+            <div><b>Status:</b> <span id="statusText"><%= payment.status %></span></div>
+            <div class="muted">TrxID: <%= payment.tnx_id %></div>
+            <div class="muted">Do not close this page until verification completes.</div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <script>
+      const expiresAt = new Date("<%= expiresAt %>").getTime();
+      const timerEl = document.getElementById("timer");
+
+      function pad(n){ return String(n).padStart(2,"0"); }
+
+      async function expireIfNeeded() {
+        <% if (payment) { %>
+                window.location.href = "<%= site.call_back_url %>" + (("<%= site.call_back_url %>".includes("?") ? "&" : "?") +
+                  `type=failed&paymentId=<%= payment.id %>&trxId=${encodeURIComponent("<%= payment.tnx_id %>")}`);
+        <% } %>
+      }
+
+      function tick() {
+        const now = Date.now();
+        const diff = Math.max(0, expiresAt - now);
+        const totalSec = Math.floor(diff / 1000);
+        const mm = Math.floor(totalSec / 60);
+        const ss = totalSec % 60;
+        timerEl.textContent = pad(mm) + ":" + pad(ss);
+
+        if (diff <= 0) {
+          expireIfNeeded();
+        }
+      }
+
+      tick();
+      setInterval(tick, 1000);
+
+      <% if (payment) { %>
+        const statusText = document.getElementById("statusText");
+        const statusBox = document.getElementById("statusBox");
+
+        async function poll() {
+          try {
+            const res = await fetch(`/api/v1/payment/status/<%= payment.id %>?token=${encodeURIComponent("<%= token %>")}`);
+            const data = await res.json();
+
+            if (data.status) {
+              statusText.textContent = data.status;
+
+              if (data.status === "SUCCESS") {
+                // redirect to callback url
+                window.location.href = "<%= site.call_back_url %>" + (("<%= site.call_back_url %>".includes("?") ? "&" : "?") +
+                  `type=success&paymentId=<%= payment.id %>&trxId=${encodeURIComponent("<%= payment.tnx_id %>")}`);
+              }
+
+              if (data.status === "FAILED") {
+                window.location.href = "<%= site.call_back_url %>" + (("<%= site.call_back_url %>".includes("?") ? "&" : "?") +
+                  `type=failed&paymentId=<%= payment.id %>&trxId=${encodeURIComponent("<%= payment.tnx_id %>")}`);
+              }
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+
+        // every 3 seconds
+        setInterval(poll, 3000);
+        poll();
+      <% } %>
+    </script>
+  </body>
+</html>

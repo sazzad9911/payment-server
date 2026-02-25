@@ -1,12 +1,18 @@
 import prisma from "./shared/prisma";
 
 export const seed = async () => {
-  const settings = await prisma.settings.findFirst();
-  if (!settings) {
-    await prisma.settings.create({
+  const admin = await prisma.user.findFirst({
+    where: { role: "ADMIN" },
+  });
+  if (!admin) {
+    await prisma.user.create({
       data: {
-        free_product_limit: 50,
-        recharge_commission: 0,
+        name: "Admin",
+        email: "admin@example.com",
+        password: "12345678",
+        role: "ADMIN",
+        status: "ACTIVE",
+        passwordChangedAt: new Date(Date.now() - 30 * 1000),
       },
     });
   }

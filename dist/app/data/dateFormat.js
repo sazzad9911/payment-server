@@ -1,0 +1,31 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const dateFormatOptions = [
+    "d-m-Y",
+    "d/m/Y",
+    "d.m.Y",
+    "d M Y",
+    "d F Y",
+    "j-n-Y",
+    "j/n/y",
+    "d-m-y",
+    "m-d-Y",
+    "m/d/Y",
+    "n/j/Y",
+    "M d, Y",
+    "F d, Y",
+    "m-d-y",
+    "Y-m-d",
+    "Y/m/d",
+    "y-m-d",
+    "Ymd",
+    "d-m-Y H:i",
+    "Y-m-d H:i:s",
+    "m/d/Y h:i A",
+    "d M Y, H:i:s",
+    "l, d F Y",
+    "D, d M Y",
+    "l, jS F Y",
+    "U",
+];
+exports.default = dateFormatOptions;

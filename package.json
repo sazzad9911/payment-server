@@ -1,5 +1,5 @@
 {
-  "name": "marine-server",
+  "name": "oazpay-server",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -34,7 +34,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@eslint/js": "^9.38.0",
     "@types/bcrypt": "^5.0.2",
@@ -43,7 +42,7 @@
     "@types/disposable-email-domains": "^1.0.6",
     "@types/express": "^5.0.1",
     "@types/multer": "^1.4.12",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.19.11",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.17",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
@@ -56,23 +55,25 @@
     "jiti": "^2.6.1",
     "lint-staged": "^16.2.4",
     "prettier": "^3.6.2",
-    "prisma": "^7.0.0",
+    "prisma": "^7.4.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.1"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.806.0",
-    "@prisma/adapter-pg": "^7.0.0",
-    "@prisma/client": "^7.0.0",
+    "@prisma/adapter-mariadb": "^7.4.1",
+    "@prisma/client": "^7.4.1",
     "@types/jsonwebtoken": "^9.0.9",
     "axios": "^1.13.2",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "disposable-email-domains": "^1.0.62",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
+    "ejs": "^4.0.1",
     "eslint-plugin-import": "^2.32.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.6.0",
@@ -84,5 +85,6 @@
     "nodemon": "^3.1.10",
     "socket.io": "^4.8.1",
     "zod": "^3.24.3"
-  }
+  },
+  "description": ""
 }

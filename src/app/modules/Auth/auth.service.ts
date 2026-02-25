@@ -19,10 +19,7 @@ const registerUser = async (payload: RegisterType) => {
   });
 
   if (!existingUser) {
-    throw new ApiError(
-      httpStatus.CONFLICT,
-      `Please verify phone number first!`,
-    );
+    throw new ApiError(httpStatus.CONFLICT, `Please verify email first!`);
   }
 
   // 3. Hash the password
@@ -34,11 +31,11 @@ const registerUser = async (payload: RegisterType) => {
   // 4. Create the new user
   const newUser = await prisma.user.create({
     data: {
-      ...rest,
       password: hashedPassword,
       passwordChangedAt: new Date(Date.now() - 30 * 1000),
-      phone: existingUser.phone,
+      email: existingUser.email,
       activeTokenId: uid,
+      name: rest.name,
     },
   });
 
@@ -46,7 +43,7 @@ const registerUser = async (payload: RegisterType) => {
   const accessToken = jwtHelpers.generateToken(
     {
       id: newUser.id,
-      phone: newUser.phone,
+      email: newUser.email,
       role: newUser.role,
       uid: uid,
     },
@@ -61,19 +58,19 @@ const registerUser = async (payload: RegisterType) => {
 //send otp
 const sendOTP = async (payload: otpType, reset: boolean) => {
   const isUser = await prisma.user.findUnique({
-    where: { phone: payload.phone },
+    where: { email: payload.email },
   });
   if (isUser && !reset)
     throw new ApiError(
       httpStatus.EXPECTATION_FAILED,
       "User already registered!",
     );
-  const otp = await otpGenerator(payload.phone);
+  const otp = await otpGenerator(payload.email);
   const result = await prisma.otpCodes.upsert({
-    where: { phone: payload.phone },
+    where: { email: payload.email },
     create: {
       code: otp,
-      phone: payload.phone,
+      email: payload.email,
       updatedAt: new Date(),
     },
     update: {
@@ -81,14 +78,14 @@ const sendOTP = async (payload: otpType, reset: boolean) => {
       updatedAt: new Date(),
     },
     select: {
-      phone: true,
+      email: true,
     },
   });
   return result;
 };
 const validateOtp = async (payload: verifyOtpType) => {
   const result = await prisma.otpCodes.findUnique({
-    where: { phone: payload.phone },
+    where: { email: payload.email },
   });
 
   if (!result) {
@@ -111,16 +108,16 @@ const validateOtp = async (payload: verifyOtpType) => {
 };
 
 // user login
-const loginUser = async (payload: { phone: string; password: string }) => {
+const loginUser = async (payload: { email: string; password: string }) => {
   const userData = await prisma.user.findUnique({
     where: {
-      phone: payload.phone,
+      email: payload.email,
     },
   });
-  if (!userData?.phone) {
+  if (!userData?.email) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "User not found! with this phone " + payload.phone,
+      "User not found! with this email " + payload.email,
     );
   }
   const isCorrectPassword: boolean = await bcrypt.compare(
@@ -215,7 +212,7 @@ const forgotPassword = async (otpId: string, password: string) => {
 
   // 4. Create the new user
   const newUser = await prisma.user.update({
-    where: { phone: otp.phone },
+    where: { email: otp.email },
     data: {
       password: hashedPassword,
       passwordChangedAt: new Date(Date.now() - 30 * 1000),
@@ -226,7 +223,7 @@ const forgotPassword = async (otpId: string, password: string) => {
   const accessToken = jwtHelpers.generateToken(
     {
       id: newUser.id,
-      phone: newUser.phone,
+      email: newUser.email,
       role: newUser.role,
     },
     config.jwt.jwt_secret as Secret,
@@ -275,22 +272,6 @@ const resetPassword = async (token: string, payload: { password: string }) => {
 const checkAuth = async (userId: string) => {
   const userData = await prisma.user.findUnique({
     where: { id: userId },
-    include: {
-      packageBuyers: {
-        select: {
-          package: true,
-        },
-        take: 1,
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-      conversations: {
-        select: {
-          id: true,
-        },
-      },
-    },
   });
   return userData;
 };

@@ -17,26 +17,7 @@ export const setupSocket = (server: any) => {
     console.log("New client connected:", socket.id);
     // Attach individual event modules
     userEvents(socket, io);
-    otpEvents(socket, io);
-
-    socket.on("disconnect", async () => {
-      console.log("Client disconnected:", socket.id);
-
-      try {
-        await prisma.sim_client.updateMany({
-          where: {
-            socketId: socket.id,
-            isActive: true,
-          },
-          data: {
-            isActive: false,
-            updatedAt: new Date(),
-          },
-        });
-      } catch (err) {
-        console.error("Disconnect cleanup failed:", err);
-      }
-    });
+    //otpEvents(socket, io);
   });
 };
 

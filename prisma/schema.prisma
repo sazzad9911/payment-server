@@ -16,6 +16,7 @@ model User {
   email             String     @unique
   role              UserRole   @default(USER)
   status            UserStatus @default(ACTIVE)
+  activeTokenId     String?
   passwordChangedAt DateTime
   createdAt         DateTime   @default(now())
 }
@@ -39,11 +40,60 @@ model OtpCodes {
   isSuccess Boolean  @default(false)
 }
 
+model Sites {
+  id            String         @id @unique @default(uuid())
+  name          String         @unique
+  call_back_url String
+  logo_url      String
+  status        UserStatus     @default(ACTIVE)
+  password      String         @default("12345678")
+  createdAt     DateTime       @default(now())
+  paymentLists  payment_list[]
+}
+
 enum banks {
   BKASH
   NAGAD
   ROCKET
   UPAY
-  NA
 }
 
+enum payment_type {
+  SEND_MONEY
+  CASH_OUT
+  PAYMENT
+}
+
+model mobile_banks {
+  id           String         @id @unique @default(uuid())
+  socketId     String
+  number       String
+  sim          Int
+  type         payment_type
+  bank         banks
+  status       UserStatus     @default(ACTIVE)
+  isActive     Boolean        @default(false)
+  updatedAt    DateTime       @default(now())
+  createdAt    DateTime       @default(now())
+  paymentLists payment_list[]
+
+  @@unique([number, bank, type])
+}
+
+enum payment_status {
+  PENDING
+  FAILED
+  SUCCESS
+}
+
+model payment_list {
+  id        String         @id @unique @default(uuid())
+  bank_id   String
+  bank      mobile_banks   @relation(fields: [bank_id], references: [id], onDelete: Cascade)
+  site_id   String
+  site      Sites          @relation(fields: [site_id], references: [id], onDelete: Cascade)
+  tnx_id    String
+  status    payment_status @default(PENDING)
+  amount    Float
+  createdAt DateTime       @default(now())
+}

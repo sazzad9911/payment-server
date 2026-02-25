@@ -1,0 +1,26 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RechargeRoutes = void 0;
+const express_1 = __importDefault(require("express"));
+const auth_1 = __importDefault(require("../../middlewares/auth"));
+const recharge_controller_1 = require("./recharge.controller");
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
+const recharge_validation_1 = require("./recharge.validation");
+const router = express_1.default.Router();
+router.post("/offer", (0, auth_1.default)("ADMIN"), recharge_controller_1.RechargeController.createOffer);
+router.delete("/offer/:offerId", (0, auth_1.default)("ADMIN"), recharge_controller_1.RechargeController.deleteOffer);
+router.put("/offer/:offerId", (0, auth_1.default)("ADMIN"), recharge_controller_1.RechargeController.updateOffer);
+router.get("/offer", recharge_controller_1.RechargeController.getAllOffers);
+router.post("/recharge-offer", (0, auth_1.default)("ADMIN"), (0, validateRequest_1.default)(recharge_validation_1.RechargeSchema.rechargeOfferSchema), recharge_controller_1.RechargeController.createRechargeOffer);
+router.put("/recharge-offer/:id", (0, auth_1.default)("ADMIN"), (0, validateRequest_1.default)(recharge_validation_1.RechargeSchema.rechargeOfferSchema.partial()), recharge_controller_1.RechargeController.updateRechargeOffer);
+router.delete("/recharge-offer/:id", (0, auth_1.default)("ADMIN"), recharge_controller_1.RechargeController.deleteRechargeOffer);
+router.get("/recharge-offer", recharge_controller_1.RechargeController.getRechargeOffers);
+router.patch("/retry-recharge/:id", (0, auth_1.default)("ADMIN"), recharge_controller_1.RechargeController.retryRecharge);
+router.patch("/cancel-recharge/:id", (0, auth_1.default)("ADMIN"), recharge_controller_1.RechargeController.cancelRecharge);
+router.patch("/manual-recharge-success/:id", (0, auth_1.default)("ADMIN"), recharge_controller_1.RechargeController.manualRechargeSuccess);
+router.post("/", (0, auth_1.default)(), (0, validateRequest_1.default)(recharge_validation_1.RechargeSchema.rechargeSchema), recharge_controller_1.RechargeController.createRecharge);
+router.get("/", (0, auth_1.default)(), recharge_controller_1.RechargeController.getRecharge);
+exports.RechargeRoutes = router;

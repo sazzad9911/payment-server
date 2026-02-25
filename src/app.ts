@@ -29,6 +29,12 @@ const PUBLIC_DIR = path.join(process.cwd(), "public");
 app.use("/public", express.static(PUBLIC_DIR));
 app.use("/uploads", express.static(path.join(PUBLIC_DIR, "uploads")));
 
+// Set view engine
+app.set("view engine", "ejs");
+
+// Set views folder
+app.set("views", path.join(PUBLIC_DIR, "views"));
+
 // Route handler for root endpoint
 app.get("/", (_req: Request, res: Response) => {
   res.send({

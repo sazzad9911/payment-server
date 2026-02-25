@@ -1,0 +1,24 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SystemRoutes = void 0;
+const express_1 = __importDefault(require("express"));
+const System_controller_1 = require("./System.controller");
+const auth_1 = __importDefault(require("../../middlewares/auth"));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
+const System_validation_1 = require("./System.validation");
+const fileUploader_1 = require("../../../helpars/fileUploader");
+const router = express_1.default.Router();
+router.get("/sim", System_controller_1.SystemController.getSimInfos);
+router.patch("/sim/:id/ussd", System_controller_1.SystemController.updateUssdCode);
+router.patch("/sim/:id/toggle-otp", System_controller_1.SystemController.toggleActiveOTPSim);
+router.get("/contact", (0, auth_1.default)("ADMIN"), System_controller_1.SystemController.getContacts);
+router.post("/contact", (0, auth_1.default)(), (0, validateRequest_1.default)(System_validation_1.SystemValidation.createContactSchema), System_controller_1.SystemController.makeContact);
+router.get("/banner", (0, auth_1.default)(), System_controller_1.SystemController.getBanner);
+router.post("/banner", (0, auth_1.default)("ADMIN"), fileUploader_1.fileUploader.upload.single("file"), System_controller_1.SystemController.createBanner);
+router.delete("/banner/:id", (0, auth_1.default)("ADMIN"), System_controller_1.SystemController.deleteBanner);
+router.get("/overview/user", (0, auth_1.default)(), System_controller_1.SystemController.userOverview);
+router.get("/overview/admin", (0, auth_1.default)("ADMIN"), System_controller_1.SystemController.adminOverview);
+exports.SystemRoutes = router;

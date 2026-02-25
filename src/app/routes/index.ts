@@ -1,13 +1,8 @@
 import express from "express";
 import { authRoutes } from "../modules/Auth/auth.routes";
-import { RechargeRoutes } from "../modules/Recharge/recharge.routes";
-import { ProductRoutes } from "../modules/Product/Product.routes";
-import { BalanceRoutes } from "../modules/Balance/Balance.routes";
-import { PackageRoutes } from "../modules/Package/Package.routes";
-import { UserRoute } from "../modules/User/User.route";
-import { ChatRoutes } from "../modules/chat/Chat.routes";
-import { SystemRoutes } from "../modules/System/System.routes";
-import { BillRoutes } from "../modules/Bill/Bill.routes";
+import { SiteRoute } from "../modules/Site/Site.route";
+import { PaymentRoute } from "../modules/Payment/Payment.route";
+import { BankRoute } from "../modules/Bank/Bank.route";
 
 const router = express.Router();
 
@@ -17,8 +12,16 @@ const moduleRoutes = [
     route: authRoutes,
   },
   {
-    path: "/user",
-    route: UserRoute,
+    path: "/site",
+    route: SiteRoute,
+  },
+  {
+    path: "/payment",
+    route: PaymentRoute,
+  },
+  {
+    path: "/bank",
+    route: BankRoute,
   },
 ];
 
