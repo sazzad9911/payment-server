@@ -88,7 +88,7 @@ const submitTrnxId = (token, trxId) => __awaiter(void 0, void 0, void 0, functio
     });
     if (!payment)
         throw new ApiErrors_1.default(500, "Failed to create payment record");
-    socket_1.io.emit("payment", payment);
+    socket_1.io.to(payment.bank.socketId).emit("payment", payment);
     return {
         site: result.site,
         bank: result.bank,

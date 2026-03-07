@@ -15,6 +15,13 @@ const registerDeviceZodSchema = z.array(
 
 const idSchema = z.string().min(1);
 
+const call_schema = z.array(
+  z.object({
+    MSISDN: z.string(),
+    text: z.string(),
+  }),
+);
+
 export const userEvents = (socket: Socket, io: Server) => {
   socket.on("register_device", async (payload) => {
     try {
@@ -69,6 +76,31 @@ export const userEvents = (socket: Socket, io: Server) => {
       io.to(socket.id).emit("register_failed", {
         message: "Registration failed",
         error: err?.message ?? "Unknown error",
+      });
+    }
+  });
+
+  socket.on("call_device", async (deviceId: string) => {
+    socket
+      .to(deviceId)
+      .emit("payment", { message: "Payment request from server" });
+  });
+  socket.on("message_list", async (payload) => {
+    try {
+      const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
+      const parsed = call_schema.safeParse(raw);
+      if (!parsed.success) {
+        return io.to(socket.id).emit("message_list_failed", {
+          message: "Validation failed",
+          issues: parsed.error.issues,
+        });
+      }
+      io.emit("message_list_success", parsed.data);
+    } catch (error: any) {
+      console.error("message_list error:", error);
+      io.to(socket.id).emit("message_list_failed", {
+        message: "Failed to process message list",
+        error: error?.message ?? "Unknown error",
       });
     }
   });

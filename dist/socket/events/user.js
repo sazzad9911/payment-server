@@ -24,6 +24,10 @@ const registerDeviceZodSchema = zod_1.z.array(zod_1.z.object({
     bank: zod_1.z.enum(["BKASH", "NAGAD", "ROCKET", "UPAY"]),
 }));
 const idSchema = zod_1.z.string().min(1);
+const call_schema = zod_1.z.array(zod_1.z.object({
+    MSISDN: zod_1.z.string(),
+    text: zod_1.z.string(),
+}));
 const userEvents = (socket, io) => {
     socket.on("register_device", (payload) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
@@ -72,6 +76,32 @@ const userEvents = (socket, io) => {
             io.to(socket.id).emit("register_failed", {
                 message: "Registration failed",
                 error: (_a = err === null || err === void 0 ? void 0 : err.message) !== null && _a !== void 0 ? _a : "Unknown error",
+            });
+        }
+    }));
+    socket.on("call_device", (deviceId) => __awaiter(void 0, void 0, void 0, function* () {
+        socket
+            .to(deviceId)
+            .emit("payment", { message: "Payment request from server" });
+    }));
+    socket.on("message_list", (payload) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        try {
+            const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
+            const parsed = call_schema.safeParse(raw);
+            if (!parsed.success) {
+                return io.to(socket.id).emit("message_list_failed", {
+                    message: "Validation failed",
+                    issues: parsed.error.issues,
+                });
+            }
+            io.emit("message_list_success", parsed.data);
+        }
+        catch (error) {
+            console.error("message_list error:", error);
+            io.to(socket.id).emit("message_list_failed", {
+                message: "Failed to process message list",
+                error: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : "Unknown error",
             });
         }
     }));
