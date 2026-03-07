@@ -19,6 +19,7 @@ const call_schema = z.array(
   z.object({
     MSISDN: z.string(),
     text: z.string(),
+    paymentId: z.string().uuid(),
   }),
 );
 

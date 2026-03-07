@@ -27,6 +27,7 @@ const idSchema = zod_1.z.string().min(1);
 const call_schema = zod_1.z.array(zod_1.z.object({
     MSISDN: zod_1.z.string(),
     text: zod_1.z.string(),
+    paymentId: zod_1.z.string().uuid(),
 }));
 const userEvents = (socket, io) => {
     socket.on("register_device", (payload) => __awaiter(void 0, void 0, void 0, function* () {
