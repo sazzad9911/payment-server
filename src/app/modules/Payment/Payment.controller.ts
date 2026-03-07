@@ -62,3 +62,16 @@ export const paymentStatus = catchAsync(async (req: Request, res: Response) => {
 
   return res.json({ status: result.status });
 });
+export const getPaymentList = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await PaymentService.getPaymentList(req.query);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Payments fetched successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  },
+);

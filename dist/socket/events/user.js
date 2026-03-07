@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userEvents = void 0;
 const prisma_1 = __importDefault(require("../../shared/prisma"));
 const zod_1 = require("zod");
+const parseSMS_1 = require("../../helpars/parseSMS");
 const registerDeviceZodSchema = zod_1.z.array(zod_1.z.object({
     number: zod_1.z
         .string()
@@ -80,23 +81,66 @@ const userEvents = (socket, io) => {
             });
         }
     }));
-    socket.on("call_device", (deviceId) => __awaiter(void 0, void 0, void 0, function* () {
-        socket
-            .to(deviceId)
-            .emit("payment", { message: "Payment request from server" });
+    socket.on("call_device", (paymentId) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        try {
+            const payment = yield prisma_1.default.payment_list.findUnique({
+                where: { id: paymentId },
+                include: { bank: true },
+            });
+            io.to(socket.id).emit("payment", payment);
+        }
+        catch (e) {
+            console.error("call_device error:", e);
+            return io.to(socket.id).emit("call_failed", {
+                message: "Failed to call device",
+                error: (_a = e === null || e === void 0 ? void 0 : e.message) !== null && _a !== void 0 ? _a : "Unknown error",
+            });
+        }
     }));
     socket.on("message_list", (payload) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
         try {
             const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
-            const parsed = call_schema.safeParse(raw);
-            if (!parsed.success) {
+            const parsed = yield call_schema.parseAsync(raw);
+            const payment = yield prisma_1.default.payment_list.findUnique({
+                where: { id: parsed[0].paymentId },
+                include: { bank: true },
+            });
+            if (!payment) {
                 return io.to(socket.id).emit("message_list_failed", {
-                    message: "Validation failed",
-                    issues: parsed.error.issues,
+                    message: "Payment not found",
                 });
             }
-            io.emit("message_list_success", parsed.data);
+            if (payment.bank.bank === "BKASH") {
+                const isValid = parsed.some((sms) => (0, parseSMS_1.validateBkashPayment)(sms.text, payment.amount, payment.tnx_id, sms.MSISDN));
+                if (!isValid) {
+                    yield prisma_1.default.payment_list.update({
+                        where: { id: payment.id },
+                        data: { status: "FAILED" },
+                    });
+                    return io.to(socket.id).emit("message_list_failed", {
+                        message: "Payment validation failed",
+                    });
+                }
+            }
+            if (payment.bank.bank === "NAGAD") {
+                const isValid = parsed.some((sms) => (0, parseSMS_1.validateNagadPayment)(sms.text, payment.amount, payment.tnx_id, sms.MSISDN));
+                if (!isValid) {
+                    yield prisma_1.default.payment_list.update({
+                        where: { id: payment.id },
+                        data: { status: "FAILED" },
+                    });
+                    return io.to(socket.id).emit("message_list_failed", {
+                        message: "Payment validation failed",
+                    });
+                }
+            }
+            yield prisma_1.default.payment_list.update({
+                where: { id: payment.id },
+                data: { status: "SUCCESS" },
+            });
+            io.to(socket.id).emit("message_list_success", parsed);
         }
         catch (error) {
             console.error("message_list error:", error);
@@ -104,38 +148,6 @@ const userEvents = (socket, io) => {
                 message: "Failed to process message list",
                 error: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : "Unknown error",
             });
-        }
-    }));
-    socket.on("payment_success", (id) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a;
-        try {
-            const parsed = idSchema.safeParse(id);
-            if (!parsed.success)
-                return;
-            yield prisma_1.default.payment_list.update({
-                where: { id: parsed.data },
-                data: { status: "SUCCESS" },
-            });
-            // optional ack
-            // socket.emit("payment_status_updated", { id: parsed.data, status: "SUCCESS" });
-        }
-        catch (error) {
-            console.error("payment_success error:", (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error);
-        }
-    }));
-    socket.on("payment_failed", (id) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a;
-        try {
-            const parsed = idSchema.safeParse(id);
-            if (!parsed.success)
-                return;
-            yield prisma_1.default.payment_list.update({
-                where: { id: parsed.data },
-                data: { status: "FAILED" },
-            });
-        }
-        catch (error) {
-            console.error("payment_failed error:", (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error);
         }
     }));
     // ✅ recommended: mark inactive when socket disconnects

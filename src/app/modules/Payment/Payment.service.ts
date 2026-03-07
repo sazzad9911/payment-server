@@ -5,6 +5,7 @@ import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiErrors";
 import { Request } from "express";
 import { io } from "../../../socket";
+import { payment_listWhereInput } from "../../../generated/prisma/models";
 
 const JWT_SECRET = "PAY_SCIENTISTX_X3";
 const JWT_EXPIRES_IN = "1h";
@@ -103,9 +104,59 @@ const paymentStatus = async (id: string) => {
   console.log(payment.status);
   return { status: payment.status };
 };
+
+const getPaymentList = async (query: any) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const search = query.search || "";
+  const status = query.status || undefined;
+  const sortOrder = query.sort || "desc"; // asc | desc
+
+  const whereCondition: payment_listWhereInput = {
+    ...(search && {
+      tnx_id: {
+        contains: search,
+        mode: "insensitive",
+      },
+    }),
+    ...(status && { status }),
+  };
+
+  const [payments, total] = await Promise.all([
+    prisma.payment_list.findMany({
+      where: whereCondition,
+      skip,
+      take: limit,
+      orderBy: {
+        status: sortOrder,
+      },
+      include: {
+        bank: true,
+        site: true,
+      },
+    }),
+
+    prisma.payment_list.count({
+      where: whereCondition,
+    }),
+  ]);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
+    },
+    data: payments,
+  };
+};
 export const PaymentService = {
   loadPaymentUi,
   getPaymentUrl,
   submitTrnxId,
   paymentStatus,
+  getPaymentList,
 };

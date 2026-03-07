@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.paymentStatus = exports.submitPayment = exports.renderPaymentPage = exports.createPaymentUrl = void 0;
+exports.getPaymentList = exports.paymentStatus = exports.submitPayment = exports.renderPaymentPage = exports.createPaymentUrl = void 0;
 const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const Payment_service_1 = require("./Payment.service");
 const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
@@ -61,4 +61,14 @@ exports.paymentStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0
     //const token = String(req.query.token || "");
     const result = yield Payment_service_1.PaymentService.paymentStatus(id);
     return res.json({ status: result.status });
+}));
+exports.getPaymentList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield Payment_service_1.PaymentService.getPaymentList(req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: 200,
+        success: true,
+        message: "Payments fetched successfully",
+        meta: result.meta,
+        data: result.data,
+    });
 }));

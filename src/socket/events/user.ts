@@ -1,6 +1,10 @@
 import { Server, Socket } from "socket.io";
 import prisma from "../../shared/prisma";
 import { z } from "zod";
+import {
+  validateBkashPayment,
+  validateNagadPayment,
+} from "../../helpars/parseSMS";
 
 const registerDeviceZodSchema = z.array(
   z.object({
@@ -81,59 +85,87 @@ export const userEvents = (socket: Socket, io: Server) => {
     }
   });
 
-  socket.on("call_device", async (deviceId: string) => {
-    socket
-      .to(deviceId)
-      .emit("payment", { message: "Payment request from server" });
+  socket.on("call_device", async (paymentId: string) => {
+    try {
+      const payment = await prisma.payment_list.findUnique({
+        where: { id: paymentId },
+        include: { bank: true },
+      });
+
+      io.to(socket.id).emit("payment", payment);
+    } catch (e: any) {
+      console.error("call_device error:", e);
+      return io.to(socket.id).emit("call_failed", {
+        message: "Failed to call device",
+        error: e?.message ?? "Unknown error",
+      });
+    }
   });
   socket.on("message_list", async (payload) => {
     try {
       const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
-      const parsed = call_schema.safeParse(raw);
-      if (!parsed.success) {
+      const parsed = await call_schema.parseAsync(raw);
+
+      const payment = await prisma.payment_list.findUnique({
+        where: { id: parsed[0].paymentId },
+        include: { bank: true },
+      });
+      if (!payment) {
         return io.to(socket.id).emit("message_list_failed", {
-          message: "Validation failed",
-          issues: parsed.error.issues,
+          message: "Payment not found",
         });
       }
-      io.emit("message_list_success", parsed.data);
+      if (payment.bank.bank === "BKASH") {
+        const isValid = parsed.some((sms) =>
+          validateBkashPayment(
+            sms.text,
+            payment.amount,
+            payment.tnx_id,
+            sms.MSISDN,
+          ),
+        );
+
+        if (!isValid) {
+          await prisma.payment_list.update({
+            where: { id: payment.id },
+            data: { status: "FAILED" },
+          });
+          return io.to(socket.id).emit("message_list_failed", {
+            message: "Payment validation failed",
+          });
+        }
+      }
+      if (payment.bank.bank === "NAGAD") {
+        const isValid = parsed.some((sms) =>
+          validateNagadPayment(
+            sms.text,
+            payment.amount,
+            payment.tnx_id,
+            sms.MSISDN,
+          ),
+        );
+
+        if (!isValid) {
+          await prisma.payment_list.update({
+            where: { id: payment.id },
+            data: { status: "FAILED" },
+          });
+          return io.to(socket.id).emit("message_list_failed", {
+            message: "Payment validation failed",
+          });
+        }
+      }
+      await prisma.payment_list.update({
+        where: { id: payment.id },
+        data: { status: "SUCCESS" },
+      });
+      io.to(socket.id).emit("message_list_success", parsed);
     } catch (error: any) {
       console.error("message_list error:", error);
       io.to(socket.id).emit("message_list_failed", {
         message: "Failed to process message list",
         error: error?.message ?? "Unknown error",
       });
-    }
-  });
-
-  socket.on("payment_success", async (id: unknown) => {
-    try {
-      const parsed = idSchema.safeParse(id);
-      if (!parsed.success) return;
-
-      await prisma.payment_list.update({
-        where: { id: parsed.data },
-        data: { status: "SUCCESS" },
-      });
-
-      // optional ack
-      // socket.emit("payment_status_updated", { id: parsed.data, status: "SUCCESS" });
-    } catch (error: any) {
-      console.error("payment_success error:", error?.message ?? error);
-    }
-  });
-
-  socket.on("payment_failed", async (id: unknown) => {
-    try {
-      const parsed = idSchema.safeParse(id);
-      if (!parsed.success) return;
-
-      await prisma.payment_list.update({
-        where: { id: parsed.data },
-        data: { status: "FAILED" },
-      });
-    } catch (error: any) {
-      console.error("payment_failed error:", error?.message ?? error);
     }
   });
 

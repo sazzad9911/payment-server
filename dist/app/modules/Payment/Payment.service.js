@@ -104,9 +104,50 @@ const paymentStatus = (id) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(payment.status);
     return { status: payment.status };
 });
+const getPaymentList = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const search = query.search || "";
+    const status = query.status || undefined;
+    const sortOrder = query.sort || "desc"; // asc | desc
+    const whereCondition = Object.assign(Object.assign({}, (search && {
+        tnx_id: {
+            contains: search,
+            mode: "insensitive",
+        },
+    })), (status && { status }));
+    const [payments, total] = yield Promise.all([
+        prisma_1.default.payment_list.findMany({
+            where: whereCondition,
+            skip,
+            take: limit,
+            orderBy: {
+                status: sortOrder,
+            },
+            include: {
+                bank: true,
+                site: true,
+            },
+        }),
+        prisma_1.default.payment_list.count({
+            where: whereCondition,
+        }),
+    ]);
+    return {
+        meta: {
+            page,
+            limit,
+            total,
+            totalPage: Math.ceil(total / limit),
+        },
+        data: payments,
+    };
+});
 exports.PaymentService = {
     loadPaymentUi,
     getPaymentUrl,
     submitTrnxId,
     paymentStatus,
+    getPaymentList,
 };
