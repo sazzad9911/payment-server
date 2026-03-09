@@ -4,6 +4,9 @@ import { SiteController } from "./Site.controller";
 import { fileUploader } from "../../../helpars/fileUploader";
 
 const route = express.Router();
+
+route.get("/dashboard", auth("ADMIN"), SiteController.getDashboardInfo);
+
 route.post(
   "/",
   auth("ADMIN"),

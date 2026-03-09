@@ -135,11 +135,66 @@ const toggleSiteStatus = async (req: Request) => {
 
   return result;
 };
+const getDashboardInfo = async () => {
+  const payments = await prisma.payment_list.findMany({
+    select: {
+      amount: true,
+      status: true,
+    },
+  });
+  const totalRequestedBalance = payments.reduce((s, d) => s + d.amount, 0);
+  const totalSuccessBalance = payments
+    .filter((d) => d.status === "SUCCESS")
+    .reduce((s, d) => s + d.amount, 0);
+  const totalFailedBalance = payments
+    .filter((d) => d.status === "FAILED")
+    .reduce((s, d) => s + d.amount, 0);
+  const sites = await prisma.sites.findMany({
+    select: { status: true, name: true },
+  });
+  const activeSite = sites.filter((d) => d.status === "ACTIVE").length;
+  const deactiveSite = sites.filter((d) => d.status === "BLOCKED").length;
+  const totalSite = sites.length;
 
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const paymentsToday = await prisma.payment_list.findMany({
+    where: {
+      createdAt: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+    },
+  });
+  const todayPendingAmount = paymentsToday
+    .filter((d) => d.status === "PENDING")
+    .reduce((s, d) => s + d.amount, 0);
+  const todayTransaction = paymentsToday.length;
+  const todayFailedTransaction = paymentsToday.filter(
+    (d) => d.status === "FAILED",
+  ).length;
+  return {
+    totalRequestedBalance,
+    totalSuccessBalance,
+    totalFailedBalance,
+    totalSite,
+    activeSite,
+    deactiveSite,
+    todayPendingAmount,
+    todayTransaction,
+    todayFailedTransaction,
+    paymentsToday,
+  };
+};
 export const SiteService = {
   createSite,
   getAllSites,
   updateSite,
   deleteSite,
   toggleSiteStatus,
+  getDashboardInfo,
 };

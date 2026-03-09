@@ -12,4 +12,6 @@ export type * from "./models/OtpCodes";
 export type * from "./models/Sites";
 export type * from "./models/mobile_banks";
 export type * from "./models/payment_list";
+export type * from "./models/contact";
+export type * from "./models/merchant";
 export type * from "./commonInputTypes";

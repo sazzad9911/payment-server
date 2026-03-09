@@ -59,11 +59,21 @@ const toggleSiteStatus = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getDashboardInfo = catchAsync(async (req: Request, res: Response) => {
+  const result = await SiteService.getDashboardInfo();
 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Analytics fetched successful",
+    data: result,
+  });
+});
 export const SiteController = {
   createSite,
   updateSite,
   deleteSite,
   getAllSites,
   toggleSiteStatus,
+  getDashboardInfo,
 };

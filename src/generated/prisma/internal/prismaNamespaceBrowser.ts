@@ -59,6 +59,8 @@ export const ModelName = {
   Sites: "Sites",
   mobile_banks: "mobile_banks",
   payment_list: "payment_list",
+  contact: "contact",
+  merchant: "merchant",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -146,6 +148,35 @@ export const Payment_listScalarFieldEnum = {
 export type Payment_listScalarFieldEnum =
   (typeof Payment_listScalarFieldEnum)[keyof typeof Payment_listScalarFieldEnum];
 
+export const ContactScalarFieldEnum = {
+  id: "id",
+  name: "name",
+  email: "email",
+  phone: "phone",
+  message: "message",
+  createdAt: "createdAt",
+} as const;
+
+export type ContactScalarFieldEnum =
+  (typeof ContactScalarFieldEnum)[keyof typeof ContactScalarFieldEnum];
+
+export const MerchantScalarFieldEnum = {
+  id: "id",
+  name: "name",
+  phone: "phone",
+  email: "email",
+  web_link: "web_link",
+  trade_url: "trade_url",
+  tin_url: "tin_url",
+  nid_url: "nid_url",
+  image_url: "image_url",
+  note: "note",
+  createdAt: "createdAt",
+} as const;
+
+export type MerchantScalarFieldEnum =
+  (typeof MerchantScalarFieldEnum)[keyof typeof MerchantScalarFieldEnum];
+
 export const SortOrder = {
   asc: "asc",
   desc: "desc",
@@ -210,3 +241,30 @@ export const payment_listOrderByRelevanceFieldEnum = {
 
 export type payment_listOrderByRelevanceFieldEnum =
   (typeof payment_listOrderByRelevanceFieldEnum)[keyof typeof payment_listOrderByRelevanceFieldEnum];
+
+export const contactOrderByRelevanceFieldEnum = {
+  id: "id",
+  name: "name",
+  email: "email",
+  phone: "phone",
+  message: "message",
+} as const;
+
+export type contactOrderByRelevanceFieldEnum =
+  (typeof contactOrderByRelevanceFieldEnum)[keyof typeof contactOrderByRelevanceFieldEnum];
+
+export const merchantOrderByRelevanceFieldEnum = {
+  id: "id",
+  name: "name",
+  phone: "phone",
+  email: "email",
+  web_link: "web_link",
+  trade_url: "trade_url",
+  tin_url: "tin_url",
+  nid_url: "nid_url",
+  image_url: "image_url",
+  note: "note",
+} as const;
+
+export type merchantOrderByRelevanceFieldEnum =
+  (typeof merchantOrderByRelevanceFieldEnum)[keyof typeof merchantOrderByRelevanceFieldEnum];

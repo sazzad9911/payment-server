@@ -63,10 +63,20 @@ const toggleSiteStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: result,
     });
 }));
+const getDashboardInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield Site_service_1.SiteService.getDashboardInfo();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Analytics fetched successful",
+        data: result,
+    });
+}));
 exports.SiteController = {
     createSite,
     updateSite,
     deleteSite,
     getAllSites,
     toggleSiteStatus,
+    getDashboardInfo,
 };

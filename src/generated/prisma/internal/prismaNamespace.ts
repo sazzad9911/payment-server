@@ -417,6 +417,8 @@ export const ModelName = {
   Sites: "Sites",
   mobile_banks: "mobile_banks",
   payment_list: "payment_list",
+  contact: "contact",
+  merchant: "merchant",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -438,7 +440,14 @@ export type TypeMap<
     omit: GlobalOmitOptions;
   };
   meta: {
-    modelProps: "user" | "otpCodes" | "sites" | "mobile_banks" | "payment_list";
+    modelProps:
+      | "user"
+      | "otpCodes"
+      | "sites"
+      | "mobile_banks"
+      | "payment_list"
+      | "contact"
+      | "merchant";
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
@@ -782,6 +791,142 @@ export type TypeMap<
         };
       };
     };
+    contact: {
+      payload: Prisma.$contactPayload<ExtArgs>;
+      fields: Prisma.contactFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.contactFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.contactFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload>;
+        };
+        findFirst: {
+          args: Prisma.contactFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.contactFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload>;
+        };
+        findMany: {
+          args: Prisma.contactFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload>[];
+        };
+        create: {
+          args: Prisma.contactCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload>;
+        };
+        createMany: {
+          args: Prisma.contactCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        delete: {
+          args: Prisma.contactDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload>;
+        };
+        update: {
+          args: Prisma.contactUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload>;
+        };
+        deleteMany: {
+          args: Prisma.contactDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.contactUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        upsert: {
+          args: Prisma.contactUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$contactPayload>;
+        };
+        aggregate: {
+          args: Prisma.ContactAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContact>;
+        };
+        groupBy: {
+          args: Prisma.contactGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ContactGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.contactCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ContactCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    merchant: {
+      payload: Prisma.$merchantPayload<ExtArgs>;
+      fields: Prisma.merchantFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.merchantFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.merchantFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload>;
+        };
+        findFirst: {
+          args: Prisma.merchantFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.merchantFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload>;
+        };
+        findMany: {
+          args: Prisma.merchantFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload>[];
+        };
+        create: {
+          args: Prisma.merchantCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload>;
+        };
+        createMany: {
+          args: Prisma.merchantCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        delete: {
+          args: Prisma.merchantDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload>;
+        };
+        update: {
+          args: Prisma.merchantUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload>;
+        };
+        deleteMany: {
+          args: Prisma.merchantDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.merchantUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        upsert: {
+          args: Prisma.merchantUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$merchantPayload>;
+        };
+        aggregate: {
+          args: Prisma.MerchantAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMerchant>;
+        };
+        groupBy: {
+          args: Prisma.merchantGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MerchantGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.merchantCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MerchantCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
   };
 } & {
   other: {
@@ -890,6 +1035,35 @@ export const Payment_listScalarFieldEnum = {
 export type Payment_listScalarFieldEnum =
   (typeof Payment_listScalarFieldEnum)[keyof typeof Payment_listScalarFieldEnum];
 
+export const ContactScalarFieldEnum = {
+  id: "id",
+  name: "name",
+  email: "email",
+  phone: "phone",
+  message: "message",
+  createdAt: "createdAt",
+} as const;
+
+export type ContactScalarFieldEnum =
+  (typeof ContactScalarFieldEnum)[keyof typeof ContactScalarFieldEnum];
+
+export const MerchantScalarFieldEnum = {
+  id: "id",
+  name: "name",
+  phone: "phone",
+  email: "email",
+  web_link: "web_link",
+  trade_url: "trade_url",
+  tin_url: "tin_url",
+  nid_url: "nid_url",
+  image_url: "image_url",
+  note: "note",
+  createdAt: "createdAt",
+} as const;
+
+export type MerchantScalarFieldEnum =
+  (typeof MerchantScalarFieldEnum)[keyof typeof MerchantScalarFieldEnum];
+
 export const SortOrder = {
   asc: "asc",
   desc: "desc",
@@ -954,6 +1128,33 @@ export const payment_listOrderByRelevanceFieldEnum = {
 
 export type payment_listOrderByRelevanceFieldEnum =
   (typeof payment_listOrderByRelevanceFieldEnum)[keyof typeof payment_listOrderByRelevanceFieldEnum];
+
+export const contactOrderByRelevanceFieldEnum = {
+  id: "id",
+  name: "name",
+  email: "email",
+  phone: "phone",
+  message: "message",
+} as const;
+
+export type contactOrderByRelevanceFieldEnum =
+  (typeof contactOrderByRelevanceFieldEnum)[keyof typeof contactOrderByRelevanceFieldEnum];
+
+export const merchantOrderByRelevanceFieldEnum = {
+  id: "id",
+  name: "name",
+  phone: "phone",
+  email: "email",
+  web_link: "web_link",
+  trade_url: "trade_url",
+  tin_url: "tin_url",
+  nid_url: "nid_url",
+  image_url: "image_url",
+  note: "note",
+} as const;
+
+export type merchantOrderByRelevanceFieldEnum =
+  (typeof merchantOrderByRelevanceFieldEnum)[keyof typeof merchantOrderByRelevanceFieldEnum];
 
 /**
  * Field references
@@ -1147,6 +1348,8 @@ export type GlobalOmitConfig = {
   sites?: Prisma.SitesOmit;
   mobile_banks?: Prisma.mobile_banksOmit;
   payment_list?: Prisma.payment_listOmit;
+  contact?: Prisma.contactOmit;
+  merchant?: Prisma.merchantOmit;
 };
 
 /* Types for Logging */

@@ -41,3 +41,13 @@ export type mobile_banks = Prisma.mobile_banksModel;
  *
  */
 export type payment_list = Prisma.payment_listModel;
+/**
+ * Model contact
+ *
+ */
+export type contact = Prisma.contactModel;
+/**
+ * Model merchant
+ *
+ */
+export type merchant = Prisma.merchantModel;

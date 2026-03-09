@@ -112,10 +112,61 @@ const toggleSiteStatus = (req) => __awaiter(void 0, void 0, void 0, function* ()
     });
     return result;
 });
+const getDashboardInfo = () => __awaiter(void 0, void 0, void 0, function* () {
+    const payments = yield prisma_1.default.payment_list.findMany({
+        select: {
+            amount: true,
+            status: true,
+        },
+    });
+    const totalRequestedBalance = payments.reduce((s, d) => s + d.amount, 0);
+    const totalSuccessBalance = payments
+        .filter((d) => d.status === "SUCCESS")
+        .reduce((s, d) => s + d.amount, 0);
+    const totalFailedBalance = payments
+        .filter((d) => d.status === "FAILED")
+        .reduce((s, d) => s + d.amount, 0);
+    const sites = yield prisma_1.default.sites.findMany({
+        select: { status: true, name: true },
+    });
+    const activeSite = sites.filter((d) => d.status === "ACTIVE").length;
+    const deactiveSite = sites.filter((d) => d.status === "BLOCKED").length;
+    const totalSite = sites.length;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    const paymentsToday = yield prisma_1.default.payment_list.findMany({
+        where: {
+            createdAt: {
+                gte: startOfDay,
+                lte: endOfDay,
+            },
+        },
+    });
+    const todayPendingAmount = paymentsToday
+        .filter((d) => d.status === "PENDING")
+        .reduce((s, d) => s + d.amount, 0);
+    const todayTransaction = paymentsToday.length;
+    const todayFailedTransaction = paymentsToday.filter((d) => d.status === "FAILED").length;
+    return {
+        totalRequestedBalance,
+        totalSuccessBalance,
+        totalFailedBalance,
+        totalSite,
+        activeSite,
+        deactiveSite,
+        todayPendingAmount,
+        todayTransaction,
+        todayFailedTransaction,
+        paymentsToday,
+    };
+});
 exports.SiteService = {
     createSite,
     getAllSites,
     updateSite,
     deleteSite,
     toggleSiteStatus,
+    getDashboardInfo,
 };
