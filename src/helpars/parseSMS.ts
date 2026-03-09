@@ -36,11 +36,16 @@ export const validateNagadPayment = (
 };
 
 const parseCashOutSMS = (sms: string): NagadSMSParse => {
-  const amountMatch = sms.match(/Cash\s*Out\s*Tk\s*([\d.]+)/i);
+  // get first Tk amount
+  const amountMatch = sms.match(/Tk\s*([\d,]+\.\d{2})/i);
+
+  // get trx id
   const txnMatch = sms.match(/TrxID\s*([A-Z0-9]+)/i);
 
   return {
-    amount: amountMatch ? parseFloat(amountMatch[1]) : undefined,
+    amount: amountMatch
+      ? parseFloat(amountMatch[1].replace(/,/g, ""))
+      : undefined,
     txnId: txnMatch ? txnMatch[1] : undefined,
   };
 };

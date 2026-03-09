@@ -88,7 +88,7 @@ const userEvents = (socket, io) => {
                 where: { id: paymentId },
                 include: { bank: true },
             });
-            io.to(socket.id).emit("payment", payment);
+            io.emit("payment", payment);
         }
         catch (e) {
             console.error("call_device error:", e);
@@ -103,6 +103,7 @@ const userEvents = (socket, io) => {
         try {
             const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
             const parsed = yield call_schema.parseAsync(raw);
+            //console.log(parsed)
             const payment = yield prisma_1.default.payment_list.findUnique({
                 where: { id: parsed[0].paymentId },
                 include: { bank: true },

@@ -92,7 +92,7 @@ export const userEvents = (socket: Socket, io: Server) => {
         include: { bank: true },
       });
 
-      io.to(socket.id).emit("payment", payment);
+      io.emit("payment", payment);
     } catch (e: any) {
       console.error("call_device error:", e);
       return io.to(socket.id).emit("call_failed", {
@@ -105,6 +105,8 @@ export const userEvents = (socket: Socket, io: Server) => {
     try {
       const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
       const parsed = await call_schema.parseAsync(raw);
+
+      //console.log(parsed)
 
       const payment = await prisma.payment_list.findUnique({
         where: { id: parsed[0].paymentId },
