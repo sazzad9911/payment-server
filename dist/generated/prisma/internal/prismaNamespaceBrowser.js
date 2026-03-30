@@ -48,7 +48,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.merchantOrderByRelevanceFieldEnum = exports.contactOrderByRelevanceFieldEnum = exports.payment_listOrderByRelevanceFieldEnum = exports.mobile_banksOrderByRelevanceFieldEnum = exports.SitesOrderByRelevanceFieldEnum = exports.OtpCodesOrderByRelevanceFieldEnum = exports.UserOrderByRelevanceFieldEnum = exports.NullsOrder = exports.SortOrder = exports.MerchantScalarFieldEnum = exports.ContactScalarFieldEnum = exports.Payment_listScalarFieldEnum = exports.Mobile_banksScalarFieldEnum = exports.SitesScalarFieldEnum = exports.OtpCodesScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
+exports.withdrawOrderByRelevanceFieldEnum = exports.merchantOrderByRelevanceFieldEnum = exports.contactOrderByRelevanceFieldEnum = exports.payment_listOrderByRelevanceFieldEnum = exports.mobile_banksOrderByRelevanceFieldEnum = exports.SitesOrderByRelevanceFieldEnum = exports.OtpCodesOrderByRelevanceFieldEnum = exports.UserOrderByRelevanceFieldEnum = exports.NullsOrder = exports.SortOrder = exports.WithdrawScalarFieldEnum = exports.MerchantScalarFieldEnum = exports.ContactScalarFieldEnum = exports.Payment_listScalarFieldEnum = exports.Mobile_banksScalarFieldEnum = exports.SitesScalarFieldEnum = exports.OtpCodesScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/index-browser"));
 exports.Decimal = runtime.Decimal;
 exports.NullTypes = {
@@ -81,7 +81,8 @@ exports.ModelName = {
     mobile_banks: 'mobile_banks',
     payment_list: 'payment_list',
     contact: 'contact',
-    merchant: 'merchant'
+    merchant: 'merchant',
+    withdraw: 'withdraw'
 };
 /*
  * Enums
@@ -118,7 +119,8 @@ exports.SitesScalarFieldEnum = {
     logo_url: 'logo_url',
     status: 'status',
     password: 'password',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    balance: 'balance'
 };
 exports.Mobile_banksScalarFieldEnum = {
     id: 'id',
@@ -160,6 +162,17 @@ exports.MerchantScalarFieldEnum = {
     nid_url: 'nid_url',
     image_url: 'image_url',
     note: 'note',
+    createdAt: 'createdAt'
+};
+exports.WithdrawScalarFieldEnum = {
+    id: 'id',
+    tranxId: 'tranxId',
+    type: 'type',
+    bank: 'bank',
+    accNo: 'accNo',
+    status: 'status',
+    siteId: 'siteId',
+    amount: 'amount',
     createdAt: 'createdAt'
 };
 exports.SortOrder = {
@@ -219,4 +232,11 @@ exports.merchantOrderByRelevanceFieldEnum = {
     nid_url: 'nid_url',
     image_url: 'image_url',
     note: 'note'
+};
+exports.withdrawOrderByRelevanceFieldEnum = {
+    id: 'id',
+    tranxId: 'tranxId',
+    accNo: 'accNo',
+    status: 'status',
+    siteId: 'siteId'
 };

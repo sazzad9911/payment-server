@@ -141,6 +141,14 @@ const userEvents = (socket, io) => {
                 where: { id: payment.id },
                 data: { status: "SUCCESS" },
             });
+            yield prisma_1.default.sites.update({
+                where: { id: payment.site_id },
+                data: {
+                    balance: {
+                        increment: payment.amount,
+                    },
+                },
+            });
             io.to(socket.id).emit("message_list_success", parsed);
         }
         catch (error) {

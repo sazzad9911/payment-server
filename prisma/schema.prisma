@@ -48,7 +48,9 @@ model Sites {
   status        UserStatus     @default(ACTIVE)
   password      String         @default("12345678")
   createdAt     DateTime       @default(now())
+  balance       Float          @default(0)
   paymentLists  payment_list[]
+  withdraws     withdraw[]
 }
 
 enum banks {
@@ -119,4 +121,17 @@ model merchant {
   image_url String
   note      String?
   createdAt DateTime @default(now())
+}
+
+model withdraw {
+  id        String       @id @unique @default(uuid())
+  tranxId   String       @unique
+  type      payment_type
+  bank      banks
+  accNo     String
+  status    String       @default("PENDING")
+  siteId    String
+  site      Sites        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  amount    Float
+  createdAt DateTime     @default(now())
 }

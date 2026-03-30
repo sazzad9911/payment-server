@@ -8,8 +8,16 @@ const express_1 = __importDefault(require("express"));
 const auth_1 = __importDefault(require("../../middlewares/auth"));
 const Site_controller_1 = require("./Site.controller");
 const fileUploader_1 = require("../../../helpars/fileUploader");
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
+const Site_validation_1 = require("./Site.validation");
 const route = express_1.default.Router();
 route.get("/dashboard", (0, auth_1.default)("ADMIN"), Site_controller_1.SiteController.getDashboardInfo);
+//withdraw
+route.post("/withdraw", (0, validateRequest_1.default)(Site_validation_1.SiteValidation.createWithdrawSchema), Site_controller_1.SiteController.createWithdraw);
+route.get("/withdraw", (0, auth_1.default)("ADMIN"), Site_controller_1.SiteController.getAllWithdraws);
+route.patch("/withdraw/:id/accept", (0, auth_1.default)("ADMIN"), Site_controller_1.SiteController.acceptWithdraw);
+route.patch("/withdraw/:id/cancel", (0, auth_1.default)("ADMIN"), Site_controller_1.SiteController.cancelWithdraw);
+//////////
 route.post("/", (0, auth_1.default)("ADMIN"), fileUploader_1.fileUploader.upload.single("logo"), Site_controller_1.SiteController.createSite);
 route.put("/:id", (0, auth_1.default)("ADMIN"), fileUploader_1.fileUploader.upload.single("logo"), Site_controller_1.SiteController.updateSite);
 route.delete("/:id", (0, auth_1.default)("ADMIN"), Site_controller_1.SiteController.deleteSite);

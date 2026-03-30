@@ -161,6 +161,14 @@ export const userEvents = (socket: Socket, io: Server) => {
         where: { id: payment.id },
         data: { status: "SUCCESS" },
       });
+      await prisma.sites.update({
+        where: { id: payment.site_id },
+        data: {
+          balance: {
+            increment: payment.amount,
+          },
+        },
+      });
       io.to(socket.id).emit("message_list_success", parsed);
     } catch (error: any) {
       console.error("message_list error:", error);

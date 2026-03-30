@@ -11,6 +11,16 @@ const createSiteZodSchema = zod_1.z.object({
     logo_url: zod_1.z.string().url("Invalid logo URL"),
     password: zod_1.z.string().min(8),
 });
+const createWithdrawSchema = zod_1.z.object({
+    type: zod_1.z.enum(["SEND_MONEY", "CASH_OUT", "PAYMENT"]),
+    bank: zod_1.z.enum(["BKASH", "NAGAD", "ROCKET", "UPAY"]),
+    amount: zod_1.z.number(),
+    accNo: zod_1.z.string(),
+    call_back_url: zod_1.z.string().url(),
+    password: zod_1.z.string().min(6),
+    name: zod_1.z.string().min(2),
+});
 exports.SiteValidation = {
     createSiteZodSchema,
+    createWithdrawSchema,
 };

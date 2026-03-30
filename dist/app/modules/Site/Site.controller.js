@@ -72,6 +72,44 @@ const getDashboardInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: result,
     });
 }));
+const getAllWithdraws = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield Site_service_1.SiteService.getAllWithdraws(req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Withdraws fetched successfully",
+        data: result,
+    });
+}));
+const createWithdraw = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield Site_service_1.SiteService.createWithdraw(req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Withdraws created successfully",
+        data: result,
+    });
+}));
+const acceptWithdraw = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield Site_service_1.SiteService.acceptWithdraw(id);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Withdraw accepted successfully",
+        data: result,
+    });
+}));
+const cancelWithdraw = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield Site_service_1.SiteService.cancelWithdraw(id);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Withdraw cancelled successfully",
+        data: result,
+    });
+}));
 exports.SiteController = {
     createSite,
     updateSite,
@@ -79,4 +117,8 @@ exports.SiteController = {
     getAllSites,
     toggleSiteStatus,
     getDashboardInfo,
+    cancelWithdraw,
+    acceptWithdraw,
+    getAllWithdraws,
+    createWithdraw,
 };

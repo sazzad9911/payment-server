@@ -12,10 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SiteService = void 0;
+exports.SiteService = exports.generateTranxId = void 0;
 const generateFileUrl_1 = require("../../../helpars/generateFileUrl");
 const Site_validation_1 = require("./Site.validation");
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
+const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
+const generateTranxId = () => {
+    return ("TRX-" +
+        Date.now().toString(36) +
+        Math.random().toString(36).substring(2, 5)).toUpperCase();
+};
+exports.generateTranxId = generateTranxId;
 const createSite = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const body = req.body;
     const file = req.file;
@@ -127,7 +134,7 @@ const getDashboardInfo = () => __awaiter(void 0, void 0, void 0, function* () {
         .filter((d) => d.status === "FAILED")
         .reduce((s, d) => s + d.amount, 0);
     const sites = yield prisma_1.default.sites.findMany({
-        select: { status: true, name: true },
+        select: { status: true, name: true, balance: true },
     });
     const activeSite = sites.filter((d) => d.status === "ACTIVE").length;
     const deactiveSite = sites.filter((d) => d.status === "BLOCKED").length;
@@ -149,6 +156,7 @@ const getDashboardInfo = () => __awaiter(void 0, void 0, void 0, function* () {
         .reduce((s, d) => s + d.amount, 0);
     const todayTransaction = paymentsToday.length;
     const todayFailedTransaction = paymentsToday.filter((d) => d.status === "FAILED").length;
+    const totalSiteBalance = sites.reduce((s, d) => s + d.balance, 0);
     return {
         totalRequestedBalance,
         totalSuccessBalance,
@@ -160,7 +168,139 @@ const getDashboardInfo = () => __awaiter(void 0, void 0, void 0, function* () {
         todayTransaction,
         todayFailedTransaction,
         paymentsToday,
+        totalSiteBalance,
     };
+});
+const createWithdraw = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const site = yield tx.sites.findFirst({
+            where: {
+                call_back_url: payload.call_back_url,
+                name: payload.name,
+                password: payload.password,
+            },
+        });
+        if (!site)
+            throw new ApiErrors_1.default(404, "Site not found!");
+        if (site.balance < payload.amount)
+            throw new ApiErrors_1.default(400, "Low balance!");
+        // decrement balance first
+        yield tx.sites.update({
+            where: { id: site.id },
+            data: {
+                balance: {
+                    decrement: payload.amount,
+                },
+            },
+        });
+        // create withdraw
+        const result = yield tx.withdraw.create({
+            data: {
+                accNo: payload.accNo,
+                amount: payload.amount,
+                bank: payload.bank,
+                tranxId: (0, exports.generateTranxId)(),
+                type: payload.type,
+                siteId: site.id,
+            },
+        });
+        return result;
+    }));
+});
+const getAllWithdraws = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const where = {};
+    if (query.search) {
+        where.tranxId = {
+            contains: query.search,
+        };
+    }
+    if (query.status) {
+        where.status = query.status;
+    }
+    const [data, total] = yield Promise.all([
+        prisma_1.default.withdraw.findMany({
+            where,
+            include: {
+                site: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+            skip,
+            take: limit,
+        }),
+        prisma_1.default.withdraw.count({ where }),
+    ]);
+    return {
+        meta: {
+            page,
+            limit,
+            total,
+            totalPage: Math.ceil(total / limit),
+        },
+        data,
+    };
+});
+const acceptWithdraw = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const withdraw = yield tx.withdraw.findUnique({
+            where: { id },
+        });
+        if (!withdraw)
+            throw new ApiErrors_1.default(404, "Withdraw not found");
+        if (withdraw.status !== "PENDING")
+            throw new ApiErrors_1.default(400, "Already processed");
+        const site = yield tx.sites.findUnique({
+            where: { id: withdraw.siteId },
+        });
+        if (!site)
+            throw new ApiErrors_1.default(404, "Site not found");
+        if (site.balance < withdraw.amount)
+            throw new ApiErrors_1.default(400, "Insufficient balance");
+        // update withdraw status
+        const result = yield tx.withdraw.update({
+            where: { id },
+            data: {
+                status: "ACCEPTED",
+            },
+        });
+        return result;
+    }));
+});
+const cancelWithdraw = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const withdraw = yield tx.withdraw.findUnique({
+            where: { id },
+        });
+        if (!withdraw)
+            throw new ApiErrors_1.default(404, "Withdraw not found");
+        if (withdraw.status !== "PENDING")
+            throw new ApiErrors_1.default(400, "Already processed");
+        const site = yield tx.sites.findUnique({
+            where: { id: withdraw.siteId },
+        });
+        if (!site)
+            throw new ApiErrors_1.default(404, "Site not found");
+        // increment balance back
+        yield tx.sites.update({
+            where: { id: site.id },
+            data: {
+                balance: {
+                    increment: withdraw.amount,
+                },
+            },
+        });
+        const result = yield tx.withdraw.update({
+            where: { id },
+            data: {
+                status: "CANCELLED",
+            },
+        });
+        return result;
+    }));
 });
 exports.SiteService = {
     createSite,
@@ -169,4 +309,8 @@ exports.SiteService = {
     deleteSite,
     toggleSiteStatus,
     getDashboardInfo,
+    createWithdraw,
+    getAllWithdraws,
+    acceptWithdraw,
+    cancelWithdraw,
 };

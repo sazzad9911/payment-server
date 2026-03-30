@@ -69,6 +69,50 @@ const getDashboardInfo = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getAllWithdraws = catchAsync(async (req: Request, res: Response) => {
+  const result = await SiteService.getAllWithdraws(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Withdraws fetched successfully",
+    data: result,
+  });
+});
+const createWithdraw = catchAsync(async (req: Request, res: Response) => {
+  const result = await SiteService.createWithdraw(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Withdraws created successfully",
+    data: result,
+  });
+});
+const acceptWithdraw = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await SiteService.acceptWithdraw(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Withdraw accepted successfully",
+    data: result,
+  });
+});
+const cancelWithdraw = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await SiteService.cancelWithdraw(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Withdraw cancelled successfully",
+    data: result,
+  });
+});
 export const SiteController = {
   createSite,
   updateSite,
@@ -76,4 +120,8 @@ export const SiteController = {
   getAllSites,
   toggleSiteStatus,
   getDashboardInfo,
+  cancelWithdraw,
+  acceptWithdraw,
+  getAllWithdraws,
+  createWithdraw,
 };
