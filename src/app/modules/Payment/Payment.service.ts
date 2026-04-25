@@ -76,6 +76,17 @@ const loadPaymentUi = async (token: string) => {
 };
 const submitTrnxId = async (token: string, trxId: string) => {
   const result = await loadPaymentUi(token);
+  const isPresent = await prisma.payment_list.count({
+    where: {
+      tnx_id: trxId,
+      bank_id: result.bank.id,
+      status: "SUCCESS",
+    },
+  });
+
+  if (isPresent > 0) {
+    throw new ApiError(400, "Transaction ID already submitted");
+  }
   const payment = await prisma.payment_list.create({
     data: {
       amount: Number(result.amount),

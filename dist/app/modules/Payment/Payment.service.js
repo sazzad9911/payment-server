@@ -74,6 +74,16 @@ const loadPaymentUi = (token) => __awaiter(void 0, void 0, void 0, function* () 
 });
 const submitTrnxId = (token, trxId) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield loadPaymentUi(token);
+    const isPresent = yield prisma_1.default.payment_list.count({
+        where: {
+            tnx_id: trxId,
+            bank_id: result.bank.id,
+            status: "SUCCESS"
+        }
+    });
+    if (isPresent > 0) {
+        throw new ApiErrors_1.default(400, "Transaction ID already submitted");
+    }
     const payment = yield prisma_1.default.payment_list.create({
         data: {
             amount: Number(result.amount),
