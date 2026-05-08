@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContactService = void 0;
-const ApiErrors_1 = __importDefault(require("../../../errors/ApiErrors"));
 const generateFileUrl_1 = require("../../../helpars/generateFileUrl");
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const Contact_validation_1 = require("./Contact.validation");
@@ -53,15 +52,22 @@ const getAllContacts = (query) => __awaiter(void 0, void 0, void 0, function* ()
     };
 });
 const createMerchant = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
     const body = req.body;
     const files = req.files;
-    if (!(files === null || files === void 0 ? void 0 : files.trade) || !(files === null || files === void 0 ? void 0 : files.tin) || !(files === null || files === void 0 ? void 0 : files.nid) || !(files === null || files === void 0 ? void 0 : files.image)) {
-        throw new ApiErrors_1.default(404, "All documents (trade, tin, nid, image) are required");
-    }
-    const tradeUrl = (0, generateFileUrl_1.generateFileUrl)(req, files.trade[0].path);
-    const tinUrl = (0, generateFileUrl_1.generateFileUrl)(req, files.tin[0].path);
-    const nidUrl = (0, generateFileUrl_1.generateFileUrl)(req, files.nid[0].path);
-    const imageUrl = (0, generateFileUrl_1.generateFileUrl)(req, files.image[0].path);
+    // optional files
+    const tradeUrl = ((_a = files === null || files === void 0 ? void 0 : files.trade) === null || _a === void 0 ? void 0 : _a[0])
+        ? (0, generateFileUrl_1.generateFileUrl)(req, files.trade[0].path)
+        : null;
+    const tinUrl = ((_b = files === null || files === void 0 ? void 0 : files.tin) === null || _b === void 0 ? void 0 : _b[0])
+        ? (0, generateFileUrl_1.generateFileUrl)(req, files.tin[0].path)
+        : null;
+    const nidUrl = ((_c = files === null || files === void 0 ? void 0 : files.nid) === null || _c === void 0 ? void 0 : _c[0])
+        ? (0, generateFileUrl_1.generateFileUrl)(req, files.nid[0].path)
+        : null;
+    const imageUrl = ((_d = files === null || files === void 0 ? void 0 : files.image) === null || _d === void 0 ? void 0 : _d[0])
+        ? (0, generateFileUrl_1.generateFileUrl)(req, files.image[0].path)
+        : null;
     const payload = Object.assign(Object.assign({}, body), { trade_url: tradeUrl, tin_url: tinUrl, nid_url: nidUrl, image_url: imageUrl });
     const data = yield Contact_validation_1.ContactValidation.merchantSchema.parseAsync(payload);
     const result = yield prisma_1.default.merchant.create({

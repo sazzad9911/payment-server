@@ -78,8 +78,8 @@ const submitTrnxId = (token, trxId) => __awaiter(void 0, void 0, void 0, functio
         where: {
             tnx_id: trxId,
             bank_id: result.bank.id,
-            status: "SUCCESS"
-        }
+            status: "SUCCESS",
+        },
     });
     if (isPresent > 0) {
         throw new ApiErrors_1.default(400, "Transaction ID already submitted");

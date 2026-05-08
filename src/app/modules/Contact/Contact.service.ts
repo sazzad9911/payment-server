@@ -50,21 +50,27 @@ const getAllContacts = async (query: any) => {
 };
 const createMerchant = async (req: Request) => {
   const body = req.body;
+
   const files = req.files as {
     [fieldname: string]: Express.Multer.File[];
   };
 
-  if (!files?.trade || !files?.tin || !files?.nid || !files?.image) {
-    throw new ApiError(
-      404,
-      "All documents (trade, tin, nid, image) are required",
-    );
-  }
+  // optional files
+  const tradeUrl = files?.trade?.[0]
+    ? generateFileUrl(req, files.trade[0].path)
+    : null;
 
-  const tradeUrl = generateFileUrl(req, files.trade[0].path);
-  const tinUrl = generateFileUrl(req, files.tin[0].path);
-  const nidUrl = generateFileUrl(req, files.nid[0].path);
-  const imageUrl = generateFileUrl(req, files.image[0].path);
+  const tinUrl = files?.tin?.[0]
+    ? generateFileUrl(req, files.tin[0].path)
+    : null;
+
+  const nidUrl = files?.nid?.[0]
+    ? generateFileUrl(req, files.nid[0].path)
+    : null;
+
+  const imageUrl = files?.image?.[0]
+    ? generateFileUrl(req, files.image[0].path)
+    : null;
 
   const payload = {
     ...body,

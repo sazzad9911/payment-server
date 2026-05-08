@@ -115,10 +115,10 @@ model merchant {
   phone     String
   email     String
   web_link  String
-  trade_url String
-  tin_url   String
-  nid_url   String
-  image_url String
+  trade_url String?
+  tin_url   String?
+  nid_url   String?
+  image_url String?
   note      String?
   createdAt DateTime @default(now())
 }

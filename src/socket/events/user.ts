@@ -11,7 +11,7 @@ const registerDeviceZodSchema = z.array(
     number: z
       .string()
       .regex(/^01\d{9}$/, "Number must be 11 digits and start with 01"),
-    sim: z.number().int(),
+    sim: z.coerce.number().int(),
     type: z.enum(["SEND_MONEY", "CASH_OUT", "PAYMENT"]),
     bank: z.enum(["BKASH", "NAGAD", "ROCKET", "UPAY"]),
   }),
@@ -29,49 +29,47 @@ const call_schema = z.array(
 
 export const userEvents = (socket: Socket, io: Server) => {
   socket.on("register_device", async (payload) => {
+    console.error(payload);
     try {
       // Accept either JSON string or object/array
       const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
 
-      const parsed = registerDeviceZodSchema.safeParse(raw);
-      if (!parsed.success) {
-        return io.to(socket.id).emit("register_failed", {
-          message: "Validation failed",
-          issues: parsed.error.issues,
-        });
-      }
+      const parsed = await registerDeviceZodSchema.parseAsync(raw);
+      // if (!parsed.success) {
+      //   return io.to(socket.id).emit("register_failed", {
+      //     message: "Validation failed",
+      //     issues: parsed.error.issues,
+      //   });
+      // }
 
-      const results = await Promise.all(
-        parsed.data.map((d) =>
-          prisma.mobile_banks.upsert({
-            where: {
-              number_bank_type: {
-                number: d.number,
-                type: d.type,
-                bank: d.bank,
-              },
-            },
-            create: {
+      const results = [];
+
+      for (const d of parsed) {
+        const result = await prisma.mobile_banks.upsert({
+          where: {
+            number_bank_type: {
               number: d.number,
-              sim: d.sim,
               type: d.type,
               bank: d.bank,
-              socketId: socket.id,
-              isActive: true,
-              // only keep this if you DON'T have @updatedAt
-              updatedAt: new Date(),
             },
-            update: {
-              socketId: socket.id,
-              isActive: true,
-              sim: d.sim,
-              type: d.type,
-              bank: d.bank,
-              updatedAt: new Date(), // only if no @updatedAt
-            },
-          }),
-        ),
-      );
+          },
+          create: {
+            number: d.number,
+            sim: d.sim,
+            type: d.type,
+            bank: d.bank,
+            socketId: socket.id,
+            isActive: true,
+          },
+          update: {
+            socketId: socket.id,
+            isActive: true,
+            sim: d.sim,
+          },
+        });
+
+        results.push(result);
+      }
 
       io.to(socket.id).emit("register_success", results);
     } catch (err: any) {

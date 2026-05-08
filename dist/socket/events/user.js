@@ -20,7 +20,7 @@ const registerDeviceZodSchema = zod_1.z.array(zod_1.z.object({
     number: zod_1.z
         .string()
         .regex(/^01\d{9}$/, "Number must be 11 digits and start with 01"),
-    sim: zod_1.z.number().int(),
+    sim: zod_1.z.coerce.number().int(),
     type: zod_1.z.enum(["SEND_MONEY", "CASH_OUT", "PAYMENT"]),
     bank: zod_1.z.enum(["BKASH", "NAGAD", "ROCKET", "UPAY"]),
 }));
@@ -33,43 +33,43 @@ const call_schema = zod_1.z.array(zod_1.z.object({
 const userEvents = (socket, io) => {
     socket.on("register_device", (payload) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
+        console.error(payload);
         try {
             // Accept either JSON string or object/array
             const raw = typeof payload === "string" ? JSON.parse(payload) : payload;
-            const parsed = registerDeviceZodSchema.safeParse(raw);
-            if (!parsed.success) {
-                return io.to(socket.id).emit("register_failed", {
-                    message: "Validation failed",
-                    issues: parsed.error.issues,
-                });
-            }
-            const results = yield Promise.all(parsed.data.map((d) => prisma_1.default.mobile_banks.upsert({
-                where: {
-                    number_bank_type: {
+            const parsed = yield registerDeviceZodSchema.parseAsync(raw);
+            // if (!parsed.success) {
+            //   return io.to(socket.id).emit("register_failed", {
+            //     message: "Validation failed",
+            //     issues: parsed.error.issues,
+            //   });
+            // }
+            const results = [];
+            for (const d of parsed) {
+                const result = yield prisma_1.default.mobile_banks.upsert({
+                    where: {
+                        number_bank_type: {
+                            number: d.number,
+                            type: d.type,
+                            bank: d.bank,
+                        },
+                    },
+                    create: {
                         number: d.number,
+                        sim: d.sim,
                         type: d.type,
                         bank: d.bank,
+                        socketId: socket.id,
+                        isActive: true,
                     },
-                },
-                create: {
-                    number: d.number,
-                    sim: d.sim,
-                    type: d.type,
-                    bank: d.bank,
-                    socketId: socket.id,
-                    isActive: true,
-                    // only keep this if you DON'T have @updatedAt
-                    updatedAt: new Date(),
-                },
-                update: {
-                    socketId: socket.id,
-                    isActive: true,
-                    sim: d.sim,
-                    type: d.type,
-                    bank: d.bank,
-                    updatedAt: new Date(), // only if no @updatedAt
-                },
-            })));
+                    update: {
+                        socketId: socket.id,
+                        isActive: true,
+                        sim: d.sim,
+                    },
+                });
+                results.push(result);
+            }
             io.to(socket.id).emit("register_success", results);
         }
         catch (err) {

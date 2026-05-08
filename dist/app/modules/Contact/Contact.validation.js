@@ -24,11 +24,11 @@ const merchantSchema = zod_1.z.object({
         .regex(/^(?:\+8801|01)[3-9]\d{8}$/, "Invalid Bangladeshi phone number"),
     email: zod_1.z.string().email("Invalid email address"),
     web_link: zod_1.z.string().url("Invalid website link"),
-    trade_url: zod_1.z.string().url("Invalid trade license URL"),
-    tin_url: zod_1.z.string().url("Invalid TIN URL"),
-    nid_url: zod_1.z.string().url("Invalid NID URL"),
-    image_url: zod_1.z.string().url("Invalid image URL"),
-    note: zod_1.z.string().max(1000, "Note is too long").optional(),
+    trade_url: zod_1.z.string().url("Invalid trade license URL").optional().nullable(),
+    tin_url: zod_1.z.string().url("Invalid TIN URL").optional().nullable(),
+    nid_url: zod_1.z.string().url("Invalid NID URL").optional().nullable(),
+    image_url: zod_1.z.string().url("Invalid image URL").optional().nullable(),
+    note: zod_1.z.string().max(1000, "Note is too long").optional().nullable(),
 });
 exports.ContactValidation = {
     contactSchema,
